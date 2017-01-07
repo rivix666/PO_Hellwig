@@ -5,11 +5,11 @@
 
 class Hellwig : public QMainWindow
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	Hellwig(QWidget *parent = 0);
-	~Hellwig();
+    Hellwig(QWidget *parent = 0);
+    ~Hellwig();
 
 private:
     // Init
@@ -23,15 +23,20 @@ private:
     void TableR0CalcData(const SDataIn& data);
     void TableRSetSize(uint rows, uint columns);
     void TableRCalcData(const SDataIn& data);
-//     void ComboCombinationsCalc()
 
     // Aux
+    void ComboCombinationsCalc(const std::vector <uint>& vec, const int& len, const int& start, std::vector <uint> result);
     QTableWidgetItem* GetTableItem(QTableWidget* table, uint row, uint column);
+
+    void ClearData();
+    void ClearRR0();
+    void ClearHellwig();
 
     Ui::HellwigClass ui;
     SDataIn m_Data;
 
 private slots:
-    void OnLoadDataTriggered();
+    bool OnLoadDataTriggered();
     void OnCalcHellwigVariableChoice();
+    void OnClearAll();
 };

@@ -8,11 +8,12 @@
 Q_DECLARE_METATYPE(std::vector <uint>);
 
 Hellwig::Hellwig(QWidget *parent)
-	: QMainWindow(parent)
+    : QMainWindow(parent)
 {
-	ui.setupUi(this);
+    ui.setupUi(this);
     InitWidgets();
-	InitToolBar();
+    InitToolBar();
+    InitConnections();
 }
 
 Hellwig::~Hellwig()
@@ -33,11 +34,14 @@ void Hellwig::InitToolBar()
     QAction* act = ui.mainToolBar->addAction(QIcon(":/Resources/folder_vertical_open.png"), tr("Load data file"), this, &Hellwig::OnLoadDataTriggered);
     act->setShortcut(QKeySequence::Open);
     act = ui.mainToolBar->addAction(QIcon(":/Resources/calculator.png"), tr("Calc Helwigg!"), this, &Hellwig::OnCalcHellwigVariableChoice);
+    act = ui.mainToolBar->addAction(QIcon(":/Resources/broom.png"), tr("Clear"), this, &Hellwig::OnClearAll);
 }
+
 
 void Hellwig::InitConnections()
 {
-
+    connect(ui.pushButton_calc_hellwig,  &QPushButton::clicked, this, &Hellwig::OnCalcHellwigVariableChoice);
+    connect(ui.pushButton_clear_hellwig, &QPushButton::clicked, this, &Hellwig::ClearHellwig);
 }
 
 // CALC
@@ -46,18 +50,18 @@ void Hellwig::TableDataSetSize(uint rows, uint columns)
 {
     ui.tableWidget_Data->setRowCount(rows);
     ui.tableWidget_Data->setColumnCount(columns);
-	QStringList headers;
-	headers << "Y";
-	for (int i = 1; i < columns; i++)
-		headers << "X" + QString::number(i);
-	ui.tableWidget_Data->setHorizontalHeaderLabels(headers);
+    QStringList headers;
+    headers << "Y";
+    for (int i = 1; i < columns; i++)
+        headers << "X" + QString::number(i);
+    ui.tableWidget_Data->setHorizontalHeaderLabels(headers);
 }
 
 void Hellwig::TableDataPassLoadedData(const SDataIn& data)
 {
     uint rows = data.data.size();
     for (uint i = 0; i < rows; i++)
-    {      
+    {
         uint columns = data.data[i].size();
         for (uint j = 0; j < columns; j++)
         {
@@ -72,10 +76,10 @@ void Hellwig::TableR0SetSize(uint rows, uint columns)
 {
     ui.tableWidget_MatrixR0->setRowCount(rows);
     ui.tableWidget_MatrixR0->setColumnCount(columns);
-	QStringList headers;
-	for (int i = 0; i < rows; i++)	
-		headers << "X" + QString::number(i + 1);	
-	ui.tableWidget_MatrixR0->setVerticalHeaderLabels(headers);
+    QStringList headers;
+    for (int i = 0; i < rows; i++)	
+        headers << "X" + QString::number(i + 1);	
+    ui.tableWidget_MatrixR0->setVerticalHeaderLabels(headers);
 }
 
 void Hellwig::TableR0CalcData(const SDataIn& data)
@@ -112,6 +116,25 @@ void Hellwig::TableRCalcData(const SDataIn& data)
     }
 }
 
+void Hellwig::ComboCombinationsCalc(const std::vector <uint>& vec, const int& len, const int& start, std::vector <uint> result)
+{
+    if (len == 0) 
+    {
+        QString str;
+        for (const uint& num : result)
+        {
+            str += "X" + QString::number(num) + ", ";
+        }
+        ui.comboBox_comb->addItem(str, QVariant::fromValue<std::vector<uint>>(result));
+        return;
+    }
+    for (int i = start; i <= vec.size() - len; i++) 
+    {
+        result[result.size() - len] = vec[i];
+        ComboCombinationsCalc(vec, len - 1, i + 1, result);
+    }
+}
+
 QTableWidgetItem* Hellwig::GetTableItem(QTableWidget* table, uint row, uint column)
 {
     QTableWidgetItem* it = table->item(row, column);
@@ -124,14 +147,38 @@ QTableWidgetItem* Hellwig::GetTableItem(QTableWidget* table, uint row, uint colu
     return it;
 }
 
+
+void Hellwig::ClearData()
+{
+    ui.tableWidget_Data->clear();
+    m_Data.Clear();
+}
+
+
+void Hellwig::ClearRR0()
+{
+    ui.tableWidget_MatrixR->clear();
+    ui.tableWidget_MatrixR0->clear();
+}
+
+
+void Hellwig::ClearHellwig()
+{
+    ui.label_comb_num->setText("Combinations number: 0");
+    ui.label_best_comb->setText("Best combination: 0");
+    ui.label_int_cap->setText("Integral capacity: H0 = 0");
+    ui.listWidget_indv_cap->clear();
+    ui.comboBox_comb->clear();
+}
+
 // SLOTS
 //////////////////////////////////////////////////////////////////////////
-void Hellwig::OnLoadDataTriggered()
+bool Hellwig::OnLoadDataTriggered()
 {
     if (!m_Data.IsEmpty())
     {
         if (QMessageBox::warning(this, tr("Warning!"), tr("You will lost current data. Are you sure?"), QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
-            return;
+            return false;
     }
 
     m_Data.Clear();
@@ -151,28 +198,36 @@ void Hellwig::OnLoadDataTriggered()
         TableR0CalcData(m_Data);
         TableRSetSize(m_Data.x_num, m_Data.x_num);
         TableRCalcData(m_Data);
+        return true;
     }
-    else
-    {
-        QMessageBox::critical(this, tr("Error"), tr("Application couldn't load given data!"));
-    } 
+
+    QMessageBox::critical(this, tr("Error"), tr("Application couldn't load given data!"));
+    return false;
 }
 
 void Hellwig::OnCalcHellwigVariableChoice()
 {
-    for (int i = 1; i <= m_Data.x_num; i++)
+    if (m_Data.data.empty())
     {
-        std::vector <uint> vec;
-        uint comb_num = CMath::CalcCombinationNum(m_Data.x_num, i);
-        for (int j = 1; j <= i; j++)       
-            vec.push_back(j);
-        
-        for (int j = 0; j < comb_num; j++)
-        {
-            
-
-
-
-        }
+        if (!OnLoadDataTriggered())
+            return;       
     }
+
+    std::vector <uint> vec;
+    for (int i = 1; i <= m_Data.x_num; i++)
+        vec.push_back(i);
+
+     for (int i = 1; i <= m_Data.x_num; i++)
+     {
+         std::vector <uint> result(i, 0);
+         ComboCombinationsCalc(vec, i, 0, result);      
+         ui.label_comb_num->setText(QString("Combinations number: %1").arg(ui.comboBox_comb->count()));
+    }
+}
+
+void Hellwig::OnClearAll()
+{
+    ClearData();
+    ClearRR0();
+    ClearHellwig();
 }
