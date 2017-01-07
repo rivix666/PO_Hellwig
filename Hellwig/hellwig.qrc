@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Resources/folder_vertical_open.png</file>
+        <file>Resources/calculator.png</file>
+    </qresource>
+</RCC>
