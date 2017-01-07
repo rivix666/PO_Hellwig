@@ -25,7 +25,10 @@ private:
     void TableRCalcData(const SDataIn& data);
 
     // Aux
-    void ComboCombinationsCalc(const std::vector <uint>& vec, const int& len, const int& start, std::vector <uint> result);
+    void CalcAllCombinations();
+    void CalcCombinations(const std::vector <uint>& vec, const int& len, const int& start, std::vector <uint> result);
+    void CalcCapacity();
+    void ChooseBestCapacity();
     QTableWidgetItem* GetTableItem(QTableWidget* table, uint row, uint column);
 
     void ClearData();
@@ -39,4 +42,5 @@ private slots:
     bool OnLoadDataTriggered();
     void OnCalcHellwigVariableChoice();
     void OnClearAll();
+    void OnCombComboIndexChanged(int idx);
 };

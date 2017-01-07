@@ -6,6 +6,7 @@
 #include "Utils.h"
 
 Q_DECLARE_METATYPE(std::vector <uint>);
+Q_DECLARE_METATYPE(std::vector <float>);
 
 Hellwig::Hellwig(QWidget *parent)
     : QMainWindow(parent)
@@ -34,7 +35,9 @@ void Hellwig::InitToolBar()
     QAction* act = ui.mainToolBar->addAction(QIcon(":/Resources/folder_vertical_open.png"), tr("Load data file"), this, &Hellwig::OnLoadDataTriggered);
     act->setShortcut(QKeySequence::Open);
     act = ui.mainToolBar->addAction(QIcon(":/Resources/calculator.png"), tr("Calc Helwigg!"), this, &Hellwig::OnCalcHellwigVariableChoice);
+    act->setShortcut(QKeySequence(tr("Ctrl+Shift+C")));
     act = ui.mainToolBar->addAction(QIcon(":/Resources/broom.png"), tr("Clear"), this, &Hellwig::OnClearAll);
+    act->setShortcut(QKeySequence(tr("Ctrl+Delete")));
 }
 
 
@@ -42,6 +45,7 @@ void Hellwig::InitConnections()
 {
     connect(ui.pushButton_calc_hellwig,  &QPushButton::clicked, this, &Hellwig::OnCalcHellwigVariableChoice);
     connect(ui.pushButton_clear_hellwig, &QPushButton::clicked, this, &Hellwig::ClearHellwig);
+    connect(ui.comboBox_comb, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &Hellwig::OnCombComboIndexChanged);
 }
 
 // CALC
@@ -116,7 +120,21 @@ void Hellwig::TableRCalcData(const SDataIn& data)
     }
 }
 
-void Hellwig::ComboCombinationsCalc(const std::vector <uint>& vec, const int& len, const int& start, std::vector <uint> result)
+void Hellwig::CalcAllCombinations()
+{
+    std::vector <uint> vec;
+    for (int i = 1; i <= m_Data.x_num; i++)
+        vec.push_back(i);
+
+    for (int i = 1; i <= m_Data.x_num; i++)
+    {
+        std::vector <uint> result(i, 0);
+        CalcCombinations(vec, i, 0, result);
+        ui.label_comb_num->setText(QString("Combinations number: %1").arg(ui.comboBox_comb->count()));
+    }
+}
+
+void Hellwig::CalcCombinations(const std::vector <uint>& vec, const int& len, const int& start, std::vector <uint> result)
 {
     if (len == 0) 
     {
@@ -131,8 +149,52 @@ void Hellwig::ComboCombinationsCalc(const std::vector <uint>& vec, const int& le
     for (int i = start; i <= vec.size() - len; i++) 
     {
         result[result.size() - len] = vec[i];
-        ComboCombinationsCalc(vec, len - 1, i + 1, result);
+        CalcCombinations(vec, len - 1, i + 1, result);
     }
+}
+
+void Hellwig::CalcCapacity()
+{
+    for (int i = 0; i < ui.comboBox_comb->count(); i++)
+    {
+        std::vector <uint> combo_vec = ui.comboBox_comb->itemData(i, Qt::UserRole).value<std::vector<uint>>();
+        std::vector <float> individual;
+        for (const uint& num : combo_vec)
+        {
+            float r = pow(ui.tableWidget_MatrixR0->item(num - 1, 0)->text().toFloat(), 2);
+            float de = 0.0f;
+            for (int h = 0; h < combo_vec.size(); h++)
+            {
+                de += abs(ui.tableWidget_MatrixR->item(num - 1, combo_vec[h] - 1)->text().toFloat());
+            }
+            individual.push_back(r / de);
+        }
+
+        float H = 0.0f;
+        for (float h : individual)
+            H += h;
+
+        ui.comboBox_comb->setItemData(i, QVariant::fromValue<std::vector<float>>(individual), ECombComboRoles::IndividualCapacityVec);
+        ui.comboBox_comb->setItemData(i, H, ECombComboRoles::IntegralCapacity);
+    }
+}
+
+void Hellwig::ChooseBestCapacity()
+{
+    int idx = 0;
+    float H = 0.0f;
+    for (int i = 0; i < ui.comboBox_comb->count(); i++)
+    {
+        float temp = ui.comboBox_comb->itemData(i, ECombComboRoles::IntegralCapacity).toFloat();
+        if (temp > H)
+        {
+            H = temp;
+            idx = i;
+        }
+    }
+
+    ui.comboBox_comb->setCurrentIndex(idx);
+    ui.label_best_comb->setText(QString("Best combination: %1").arg(ui.comboBox_comb->itemText(idx)));
 }
 
 QTableWidgetItem* Hellwig::GetTableItem(QTableWidget* table, uint row, uint column)
@@ -167,7 +229,7 @@ void Hellwig::ClearHellwig()
     ui.label_comb_num->setText("Combinations number: 0");
     ui.label_best_comb->setText("Best combination: 0");
     ui.label_int_cap->setText("Integral capacity: H0 = 0");
-    ui.listWidget_indv_cap->clear();
+    ui.tableWidget_indv_cap->clear();
     ui.comboBox_comb->clear();
 }
 
@@ -210,19 +272,12 @@ void Hellwig::OnCalcHellwigVariableChoice()
     if (m_Data.data.empty())
     {
         if (!OnLoadDataTriggered())
-            return;       
+            return;
     }
 
-    std::vector <uint> vec;
-    for (int i = 1; i <= m_Data.x_num; i++)
-        vec.push_back(i);
-
-     for (int i = 1; i <= m_Data.x_num; i++)
-     {
-         std::vector <uint> result(i, 0);
-         ComboCombinationsCalc(vec, i, 0, result);      
-         ui.label_comb_num->setText(QString("Combinations number: %1").arg(ui.comboBox_comb->count()));
-    }
+    CalcAllCombinations();
+    CalcCapacity();
+    ChooseBestCapacity();
 }
 
 void Hellwig::OnClearAll()
@@ -230,4 +285,23 @@ void Hellwig::OnClearAll()
     ClearData();
     ClearRR0();
     ClearHellwig();
+}
+
+void Hellwig::OnCombComboIndexChanged(int idx)
+{
+    ui.tableWidget_indv_cap->clear();
+    float H = ui.comboBox_comb->itemData(idx, ECombComboRoles::IntegralCapacity).toFloat();
+    ui.label_int_cap->setText(QString("Integral capacity: H%1 = %2").arg(idx + 1).arg(H));
+
+    QStringList headers;
+    std::vector <float> ind_vec = ui.comboBox_comb->itemData(idx, ECombComboRoles::IndividualCapacityVec).value<std::vector<float>>();
+    ui.tableWidget_indv_cap->setColumnCount(1);
+    ui.tableWidget_indv_cap->setRowCount(ind_vec.size());
+    for (int i = 0; i < ind_vec.size(); i++)
+    {
+        headers << "h" + QString::number(idx + 1) + "_" + QString::number(i + 1);
+        QTableWidgetItem* it = GetTableItem(ui.tableWidget_indv_cap, i, 0);
+        it->setText(QString::number(ind_vec[i]));
+    }
+    ui.tableWidget_indv_cap->setVerticalHeaderLabels(headers);
 }

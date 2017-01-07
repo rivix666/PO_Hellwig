@@ -15,3 +15,6 @@ Saved
 *.suo
 *.xcodeproj
 *.xcworkspace
+/Hellwig/GeneratedFiles
+/Hellwig/x64/Debug
+/x64/Debug

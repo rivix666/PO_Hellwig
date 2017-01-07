@@ -1,4 +1,5 @@
 #pragma once
+#include <Qt>
 #include <vector>
 #include <math.h>
 
@@ -8,6 +9,15 @@
 typedef unsigned int uint;
 typedef std::vector <std::vector <float>> TDataVec;
 
+namespace ECombComboRoles
+{
+    enum TYPE
+    {
+        CombinationVec = Qt::UserRole,
+        IndividualCapacityVec,
+        IntegralCapacity,
+    };
+};
 
 struct SDataIn
 {
