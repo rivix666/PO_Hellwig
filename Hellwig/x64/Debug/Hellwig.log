@@ -1,9 +1,0 @@
-﻿  Moc'ing hellwig.h...
-  Uic'ing hellwig.ui...
-  moc_hellwig.cpp
-  hellwig.cpp
-hellwig.cpp(140): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-  main.cpp
-  Generating Code...
-  Hellwig.vcxproj -> C:\Users\Tom\Desktop\Studia\Ekonometria\Zadanie\hellwig\Hellwig\x64\Debug\Hellwig.exe
-  Hellwig.vcxproj -> C:\Users\Tom\Desktop\Studia\Ekonometria\Zadanie\hellwig\Hellwig\x64\Debug\Hellwig.pdb (Full PDB)
