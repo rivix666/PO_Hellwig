@@ -3,5 +3,7 @@
         <file>Resources/folder_vertical_open.png</file>
         <file>Resources/calculator.png</file>
         <file>Resources/broom.png</file>
+        <file>Resources/calc_kmnk.png</file>
+        <file>Resources/chart_line.png</file>
     </qresource>
 </RCC>

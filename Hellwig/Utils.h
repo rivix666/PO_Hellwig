@@ -7,7 +7,7 @@
 #define SAFE_RELEASE(x) { if (x) { delete x; x = nullptr; } }
 
 typedef unsigned int uint;
-typedef std::vector <std::vector <float>> TDataVec;
+typedef std::vector <std::vector <double>> TDataVec;
 
 namespace ECombComboRoles
 {
@@ -36,21 +36,27 @@ struct SDataIn
         data.clear();
         x_num = 0;
     }
+
+	void GetY(std::vector <double>& out)
+	{
+		for (std::vector <double> vec : data)
+			out.push_back(vec[0]);
+	}
 };
 
 class CMath
 {
 public:
-    static float Correl(const SDataIn& data, uint col0, uint col1)
+    static double Correl(const SDataIn& data, uint col0, uint col1)
     {
-        float avg_col0 = CalcAvg(data, col0);
-        float avg_col1 = CalcAvg(data, col1);
+        double avg_col0 = CalcAvg(data, col0);
+        double avg_col1 = CalcAvg(data, col1);
 
-        float counter = 0.0f;
-        float denominator = 0.0f;
-        float sum_de0 = 0.0f;
-        float sum_de1 = 0.0f;
-        for (const std::vector <float>& vec : data.data)
+        double counter = 0.0;
+        double denominator = 0.0;
+        double sum_de0 = 0.0;
+        double sum_de1 = 0.0;
+        for (const std::vector <double>& vec : data.data)
         {
             counter += (vec[col0] - avg_col0) * (vec[col1] - avg_col1);
             sum_de0 += pow((vec[col0] - avg_col0), 2);
@@ -61,13 +67,13 @@ public:
         return counter / denominator;
     }
 
-    static float CalcAvg(const SDataIn& data, uint col)
+    static double CalcAvg(const SDataIn& data, uint col)
     {
-        float avg = 0.0f;
-        for (const std::vector <float>& vec : data.data)
+        double avg = 0.0;
+        for (const std::vector <double>& vec : data.data)
             avg += vec[col];
 
-        avg /= (float)data.data.size();
+        avg /= (double)data.data.size();
         return avg;
     }
 

@@ -11,13 +11,13 @@ bool CDataParser::ParseData(const QString& file_path, SDataIn& out)
     QTextStream in(&file);
     while (!in.atEnd()) 
     {
-        std::vector <float> vec;
+        std::vector <double> vec;
         QString line = in.readLine();
         QStringList fields = line.split(" ");
         out.x_num = (out.x_num < fields.size()) ? fields.size() : out.x_num;
         for (const QString& str : fields)
         {
-            vec.push_back(str.toFloat());
+            vec.push_back(str.toDouble());
         }
         out.data.push_back(vec);
     }
