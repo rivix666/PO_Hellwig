@@ -492,22 +492,34 @@ bool Hellwig::OnCalcKmnk()
 	std::vector <double> y_std_vec;
 	PrepareBestCombMatrix(rows_count, columns_count, mat_x);
 	m_Data.GetY(y_std_vec);
-	arma::mat mat_y(y_std_vec);
-	arma::vec vec_y(y_std_vec);
-	arma::mat mat_x_trans = mat_x.t();
-	arma::vec vec_a = (mat_x_trans * mat_x).i() * (mat_x_trans * vec_y);
-	arma::mat mat_a(vec_a);
-	arma::mat mat_su2 = (1.0 / (double)(rows_count - 3)) * ((mat_y.t() * mat_y) - mat_y.t() * mat_x * mat_a);
-	arma::mat mat_d2a = mat_su2(0, 0) * (mat_x_trans * mat_x).i();
 
-	QString da = PrepareDaString(mat_d2a);
-	CalcY(rows_count, vec_a, comb_vec);
-	double su = sqrt(mat_su2(0, 0));
-	double v = CalcV(su);
-	double r2 = CalcR2(rows_count);
+	double su = 0.0;
+	double v = 0.0;
+	double r2 = 0.0;
+	try
+	{
+		arma::mat mat_y(y_std_vec);
+		arma::vec vec_y(y_std_vec);
+		arma::mat mat_x_trans = mat_x.t();
+		arma::vec vec_a = (mat_x_trans * mat_x).i() * (mat_x_trans * vec_y);
+		arma::mat mat_a(vec_a);
+		arma::mat mat_su2 = (1.0 / (double)(rows_count - 3)) * ((mat_y.t() * mat_y) - mat_y.t() * mat_x * mat_a);
+		arma::mat mat_d2a = mat_su2(0, 0) * (mat_x_trans * mat_x).i();
 
-	SetLabelsKmnkData(da, su, v, r2);
-	SetResultLabels(da, vec_a);
+		QString da = PrepareDaString(mat_d2a);
+		CalcY(rows_count, vec_a, comb_vec);
+		su = sqrt(mat_su2(0, 0));
+		v = CalcV(su);
+		r2 = CalcR2(rows_count);
+
+		SetLabelsKmnkData(da, su, v, r2);
+		SetResultLabels(da, vec_a);
+	}
+	catch (std::runtime_error)
+	{
+		QMessageBox::critical(this, tr("Error!"), tr("Error occured during kmnk calc. Probably wrong matrices."));
+		return false;
+	}
     return true;
 }
 
