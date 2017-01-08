@@ -4,7 +4,7 @@
 #include "ui_hellwig.h"
 #include "Utils.h"
 
-class QGraphicsScene;
+class CScene;
 
 class Hellwig : public QMainWindow
 {
@@ -16,6 +16,7 @@ public:
 
 private:
     // Init
+	void InitUi();
     void InitToolBar();
     void InitConnections();
 
@@ -36,6 +37,9 @@ private:
 	double CalcR2(uint rows_count);
 	double CalcV(double su);
 
+	void DrawChart(double& max_x, double& max_y);
+	void DrawHelpers(const double& max_x, const double& max_y);
+
 	void SetLabelsKmnkData(const QString& da, double su, double v, double r2);
 	void SetResultLabels(const QString& da, const arma::vec& vec);
     QTableWidgetItem* GetTableItem(QTableWidget* table, uint row, uint column);
@@ -46,11 +50,13 @@ private:
     void ClearKmnk();
 	void ClearChart();
 
-    Ui::HellwigClass ui;
-	QGraphicsScene* m_Scene;
+	CScene* m_Scene;
     SDataIn m_Data;
+    int		m_BestCombIdx;
+	double	m_ZoomFactor;
+
+    Ui::HellwigClass ui;
 	std::vector <double> m_CalcY;
-    int m_BestCombIdx;
 
 private slots:
     bool OnLoadDataTriggered();
@@ -59,4 +65,6 @@ private slots:
 	bool OnGenerateChart();
     void OnClearAll();
     void OnCombComboIndexChanged(int idx);
+	void OnGraphZoomIn();
+	void OnGraphZoomOut();
 };

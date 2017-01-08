@@ -5,5 +5,7 @@
         <file>Resources/broom.png</file>
         <file>Resources/calc_kmnk.png</file>
         <file>Resources/chart_line.png</file>
+        <file>Resources/magnifier_zoom_in.png</file>
+        <file>Resources/magnifier_zoom_out.png</file>
     </qresource>
 </RCC>

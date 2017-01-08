@@ -39,7 +39,7 @@ struct SDataIn
 
 	void GetY(std::vector <double>& out)
 	{
-		for (std::vector <double> vec : data)
+		for (const std::vector <double>& vec : data)
 			out.push_back(vec[0]);
 	}
 };

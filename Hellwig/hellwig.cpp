@@ -1,8 +1,9 @@
 #include "hellwig.h"
 #include <QFileDialog>
 #include <QMessageBox>
-
+#include <QGraphicsItem>
 #include "DataParser.h"
+#include "Scene.h"
 #include "Utils.h"
 
 Q_DECLARE_METATYPE(std::vector <uint>);
@@ -11,9 +12,10 @@ Q_DECLARE_METATYPE(std::vector <double>);
 Hellwig::Hellwig(QWidget *parent)
     : QMainWindow(parent)
     , m_BestCombIdx(0)
-	, m_Scene(nullptr)
+	, m_ZoomFactor(1.0)
+	, m_Scene(new CScene(this))
 {
-    ui.setupUi(this);
+	InitUi();
     InitToolBar();
     InitConnections();
 }
@@ -25,6 +27,12 @@ Hellwig::~Hellwig()
 
 // INIT
 //////////////////////////////////////////////////////////////////////////
+void Hellwig::InitUi()
+{
+	ui.setupUi(this);
+	ui.graphicsView->setScene(m_Scene);
+}
+
 void Hellwig::InitToolBar()
 {
     QAction* act = ui.mainToolBar->addAction(QIcon(":/Resources/folder_vertical_open.png"), tr("Load data file"), this, &Hellwig::OnLoadDataTriggered);
@@ -50,6 +58,9 @@ void Hellwig::InitConnections()
     connect(ui.pushButton_clear_hellwig,    &QPushButton::clicked, this, &Hellwig::ClearHellwig);
     connect(ui.pushButton_kmnk_calc,        &QPushButton::clicked, this, &Hellwig::OnCalcKmnk);
     connect(ui.pushButton_kmnk_clear,       &QPushButton::clicked, this, &Hellwig::ClearKmnk);
+	connect(ui.pushButton_graph_zoom_in,	&QPushButton::clicked, this, &Hellwig::OnGraphZoomIn);
+	connect(ui.pushButton_graph_zoom_out,	&QPushButton::clicked, this, &Hellwig::OnGraphZoomOut);
+	connect(ui.pushButton_graph_clear,      &QPushButton::clicked, this, &Hellwig::ClearChart);
 
     // combo
     connect(ui.comboBox_comb, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &Hellwig::OnCombComboIndexChanged);
@@ -262,6 +273,70 @@ double Hellwig::CalcV(double su)
 	return su / CMath::CalcAvg(m_Data, 0) * 100.0;
 }
 
+void Hellwig::DrawChart(double& max_x, double& max_y)
+{
+	double x_mod = 100.0;
+	double y_mod = 500.0;
+
+	QPen pen_b;
+	pen_b.setWidth(2);
+	QPen pen_r(QColor(255, 0, 0, 255));
+	pen_r.setWidth(5);
+	QPen pen_g(QColor(0, 255, 0, 255));
+	pen_g.setWidth(5);
+	QBrush brush_r(QColor(255, 0, 0, 255));
+	QBrush brush_g(QColor(0, 255, 0, 255));
+
+	std::vector <double> y_std_vec;
+	m_Data.GetY(y_std_vec);
+	QPointF last_y(0.0, -(m_CalcY[0] / y_mod));
+	QPointF last_calc_y(0.0, -(y_std_vec[0] / y_mod));
+	m_Scene->addEllipse(last_y.x() - 5.0, last_y.y() - 5.0, 10.0, 10.0, pen_b, brush_r)->setZValue(1.0);
+	m_Scene->addEllipse(last_calc_y.x() - 5.0, last_calc_y.y() - 5.0, 10.0, 10.0, pen_b, brush_g)->setZValue(1.0);
+	for (int i = 1; i < m_CalcY.size(); i++)
+	{
+		QPointF y((double)i * x_mod, -(m_CalcY[i] / y_mod));
+		QPointF calc_y((double)i * x_mod, -(y_std_vec[i] / y_mod));
+		m_Scene->addLine(QLineF(last_y, y), pen_r);
+		m_Scene->addLine(QLineF(last_calc_y, calc_y), pen_g);
+		last_y = y;
+		last_calc_y = calc_y;
+		m_Scene->addEllipse(y.x() - 5.0, y.y() - 5.0, 10.0, 10.0, pen_b, brush_r)->setZValue(1.0);
+		m_Scene->addEllipse(calc_y.x() - 5.0, calc_y.y() - 5.0, 10.0, 10.0, pen_b, brush_g)->setZValue(1.0);
+
+		max_x = (y.x() > max_x) ? y.x() : max_x;
+		max_y = (y.y() < max_y) ? y.y() : max_y;
+		max_x = (calc_y.x() > max_x) ? calc_y.x() : max_x;
+		max_y = (calc_y.y() < max_y) ? calc_y.y() : max_y;
+	}
+}
+
+void Hellwig::DrawHelpers(const double& max_x, const double& max_y)
+{
+	QPen pen_b;
+	pen_b.setCapStyle(Qt::RoundCap);
+	pen_b.setWidth(2);
+	double mod = 100.0;
+	QLineF v_line(0.0, 0.0, 0.0, max_y - 200.0);
+	QLineF h_line(0.0, 0.0, max_x + 150.0, 0.0);
+	m_Scene->addLine(v_line, pen_b);
+	m_Scene->addLine(h_line, pen_b);
+
+	int h_count = (int)(h_line.length() / mod);
+	for (int i = 1; i < h_count; i++)
+	{
+		double temp = (double) i * mod;
+		m_Scene->addLine(temp, -10.0, temp, 10.0, pen_b);
+	}
+
+	int v_count = (int)(v_line.length() / mod);
+	for (int i = 1; i < v_count; i++)
+	{
+		double temp = (double) i * (-mod);
+		m_Scene->addLine(-10.0, temp, 10.0, temp, pen_b);
+	}
+}
+
 void Hellwig::SetLabelsKmnkData(const QString& da, double su, double v, double r2)
 {
 	ui.label_kmnk_Da_result->setText(da);
@@ -345,11 +420,12 @@ void Hellwig::ClearKmnk()
     ui.label_kmnk_R2->setText("R2:");
     ui.label_kmnk_v->setText("v:");
     ui.label_kmnk_Da_result->setText("");
+	m_CalcY.clear();
 }
 
 void Hellwig::ClearChart()
 {
-
+	m_Scene->clear();
 }
 
 // SLOTS
@@ -437,6 +513,19 @@ bool Hellwig::OnCalcKmnk()
 
 bool Hellwig::OnGenerateChart()
 {
+	if (m_Data.data.empty()
+		|| ui.comboBox_comb->count() < 1
+		|| m_CalcY.empty())
+	{
+		if (!OnCalcKmnk())
+			return false;
+	}
+
+	double max_x = 0.0;
+	double max_y = 0.0;
+	DrawChart(max_x, max_y);
+	DrawHelpers(max_x, max_y);
+	m_Scene->setSceneRect(QRectF(-150.0, max_y - 300.0, abs(max_x) + 450.0, abs(max_y) + 350.0));
 	return true;
 }
 
@@ -446,6 +535,7 @@ void Hellwig::OnClearAll()
     ClearRR0();
     ClearHellwig();
 	ClearKmnk();
+	ClearChart();
 }
 
 void Hellwig::OnCombComboIndexChanged(int idx)
@@ -465,4 +555,20 @@ void Hellwig::OnCombComboIndexChanged(int idx)
         it->setText(QString::number(ind_vec[i]));
     }
     ui.tableWidget_indv_cap->setVerticalHeaderLabels(headers);
+}
+
+void Hellwig::OnGraphZoomIn()
+{
+	m_ZoomFactor += 0.1;
+	QTransform transform;
+	transform.scale(m_ZoomFactor, m_ZoomFactor);
+	ui.graphicsView->setTransform(transform);
+}
+
+void Hellwig::OnGraphZoomOut()
+{
+	m_ZoomFactor -= 0.1;
+	QTransform transform;
+	transform.scale(m_ZoomFactor, m_ZoomFactor);
+	ui.graphicsView->setTransform(transform);
 }

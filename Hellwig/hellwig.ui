@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>514</width>
-    <height>258</height>
+    <width>655</width>
+    <height>442</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,16 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -28,7 +37,16 @@
         <string>Data</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
          <number>6</number>
         </property>
         <item>
@@ -36,7 +54,7 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,1,0">
             <item>
              <widget class="QLabel" name="label">
@@ -73,7 +91,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -97,9 +115,6 @@
                 </attribute>
                 <attribute name="verticalHeaderDefaultSectionSize">
                  <number>23</number>
-                </attribute>
-                <attribute name="verticalHeaderStretchLastSection">
-                 <bool>true</bool>
                 </attribute>
                </widget>
               </item>
@@ -143,9 +158,6 @@
                 <attribute name="verticalHeaderDefaultSectionSize">
                  <number>23</number>
                 </attribute>
-                <attribute name="verticalHeaderStretchLastSection">
-                 <bool>true</bool>
-                </attribute>
                </widget>
               </item>
              </layout>
@@ -161,7 +173,16 @@
         <string>Hellwig</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,1">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
          <number>6</number>
         </property>
         <item row="0" column="0" colspan="4">
@@ -244,9 +265,6 @@
              <attribute name="verticalHeaderDefaultSectionSize">
               <number>25</number>
              </attribute>
-             <attribute name="verticalHeaderStretchLastSection">
-              <bool>true</bool>
-             </attribute>
             </widget>
            </item>
           </layout>
@@ -293,12 +311,21 @@
         </item>
         <item row="1" column="1">
          <widget class="QPushButton" name="pushButton_calc_hellwig">
+          <property name="toolTip">
+           <string>Calculate Hellwig</string>
+          </property>
           <property name="text">
            <string/>
           </property>
           <property name="icon">
            <iconset resource="hellwig.qrc">
             <normaloff>:/Resources/calculator.png</normaloff>:/Resources/calculator.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
           </property>
           <property name="flat">
            <bool>true</bool>
@@ -307,12 +334,21 @@
         </item>
         <item row="1" column="2">
          <widget class="QPushButton" name="pushButton_clear_hellwig">
+          <property name="toolTip">
+           <string>Clear Hellwig</string>
+          </property>
           <property name="text">
            <string/>
           </property>
           <property name="icon">
            <iconset resource="hellwig.qrc">
             <normaloff>:/Resources/broom.png</normaloff>:/Resources/broom.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
           </property>
           <property name="flat">
            <bool>true</bool>
@@ -490,7 +526,7 @@
            <property name="frameShadow">
             <enum>QFrame::Raised</enum>
            </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,1">
+           <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,1,0">
             <item>
              <widget class="QLabel" name="label_kmnk_Da">
               <property name="text">
@@ -507,6 +543,19 @@
                <set>Qt::AlignCenter</set>
               </property>
              </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>
@@ -529,14 +578,163 @@
       </widget>
       <widget class="QWidget" name="tab_4">
        <attribute name="title">
-        <string>Graph</string>
+        <string>Chart</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_6">
-        <property name="margin">
-         <number>0</number>
-        </property>
+       <layout class="QVBoxLayout" name="verticalLayout_11">
         <item>
-         <widget class="QGraphicsView" name="graphicsView"/>
+         <widget class="QGraphicsView" name="graphicsView">
+          <property name="renderHints">
+           <set>QPainter::HighQualityAntialiasing|QPainter::TextAntialiasing</set>
+          </property>
+          <property name="dragMode">
+           <enum>QGraphicsView::ScrollHandDrag</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <item>
+             <layout class="QFormLayout" name="formLayout_3">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_6">
+                <property name="text">
+                 <string>Loaded Y: </string>
+                </property>
+                <property name="indent">
+                 <number>15</number>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="label_7">
+                <property name="text">
+                 <string> &lt;font color=&quot;red&quot;&gt;Red&lt;/font&gt; </string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QFormLayout" name="formLayout_2">
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_8">
+                <property name="text">
+                 <string>Calculated Y:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string> &lt;font color=&quot;green&quot;&gt;Green&lt;/font&gt; </string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_graph_zoom_out">
+            <property name="toolTip">
+             <string>Zoom out</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="hellwig.qrc">
+              <normaloff>:/Resources/magnifier_zoom_out.png</normaloff>:/Resources/magnifier_zoom_out.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="shortcut">
+             <string>-</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_graph_zoom_in">
+            <property name="toolTip">
+             <string>Zoom in</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="hellwig.qrc">
+              <normaloff>:/Resources/magnifier_zoom_in.png</normaloff>:/Resources/magnifier_zoom_in.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="shortcut">
+             <string>+</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFrame" name="frame_8">
+            <property name="frameShape">
+             <enum>QFrame::VLine</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_graph_clear">
+            <property name="toolTip">
+             <string>Clear chart</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="hellwig.qrc">
+              <normaloff>:/Resources/broom.png</normaloff>:/Resources/broom.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_6">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
