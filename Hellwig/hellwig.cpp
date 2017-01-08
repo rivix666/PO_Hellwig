@@ -61,6 +61,7 @@ void Hellwig::InitConnections()
 	connect(ui.pushButton_graph_zoom_in,	&QPushButton::clicked, this, &Hellwig::OnGraphZoomIn);
 	connect(ui.pushButton_graph_zoom_out,	&QPushButton::clicked, this, &Hellwig::OnGraphZoomOut);
 	connect(ui.pushButton_graph_clear,      &QPushButton::clicked, this, &Hellwig::ClearChart);
+	connect(ui.pushButton_refresh_chart,    &QPushButton::clicked, this, &Hellwig::OnRepaintChart);
 
     // combo
     connect(ui.comboBox_comb, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &Hellwig::OnCombComboIndexChanged);
@@ -275,8 +276,8 @@ double Hellwig::CalcV(double su)
 
 void Hellwig::DrawChart(double& max_x, double& max_y)
 {
-	double x_mod = 100.0;
-	double y_mod = 500.0;
+	double x_mod = ui.doubleSpinBox_chart_x->value();
+	double y_mod = ui.doubleSpinBox_chart_y->value();
 
 	QPen pen_b;
 	pen_b.setWidth(2);
@@ -583,4 +584,10 @@ void Hellwig::OnGraphZoomOut()
 	QTransform transform;
 	transform.scale(m_ZoomFactor, m_ZoomFactor);
 	ui.graphicsView->setTransform(transform);
+}
+
+void Hellwig::OnRepaintChart()
+{
+	m_Scene->clear();
+	OnGenerateChart();
 }

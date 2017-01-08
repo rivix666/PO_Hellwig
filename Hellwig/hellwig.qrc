@@ -7,5 +7,6 @@
         <file>Resources/chart_line.png</file>
         <file>Resources/magnifier_zoom_in.png</file>
         <file>Resources/magnifier_zoom_out.png</file>
+        <file>Resources/arrow_refresh.png</file>
     </qresource>
 </RCC>

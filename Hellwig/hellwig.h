@@ -67,4 +67,5 @@ private slots:
     void OnCombComboIndexChanged(int idx);
 	void OnGraphZoomIn();
 	void OnGraphZoomOut();
+	void OnRepaintChart();
 };
