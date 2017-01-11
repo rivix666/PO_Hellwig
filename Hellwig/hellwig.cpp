@@ -247,7 +247,7 @@ void Hellwig::CalcY(uint rows_count, const arma::vec& vec, const std::vector <ui
 	{
 		for (int j = 0; j < comb_vec.size(); j++)
 		{
-			m_CalcY[i] += vec[j] * ui.tableWidget_Data->item(i, comb_vec[j])->text().toDouble();
+			m_CalcY[i] += vec[j] * ui.tableWidget_Data->item(i, comb_vec[j] - 1)->text().toDouble();
 		}
 		m_CalcY[i] += *vec.end();
 	}
@@ -274,7 +274,7 @@ double Hellwig::CalcV(double su)
 	return su / CMath::CalcAvg(m_Data, 0) * 100.0;
 }
 
-void Hellwig::DrawChart(double& max_x, double& max_y)
+void Hellwig::DrawChart(double& min_x, double& min_y, double& max_x, double& max_y)
 {
 	double x_mod = ui.doubleSpinBox_chart_x->value();
 	double y_mod = ui.doubleSpinBox_chart_y->value();
@@ -290,14 +290,14 @@ void Hellwig::DrawChart(double& max_x, double& max_y)
 
 	std::vector <double> y_std_vec;
 	m_Data.GetY(y_std_vec);
-	QPointF last_y(0.0, -(m_CalcY[0] / y_mod));
-	QPointF last_calc_y(0.0, -(y_std_vec[0] / y_mod));
+	QPointF last_y(0.0, -(m_CalcY[0] * y_mod));
+	QPointF last_calc_y(0.0, -(y_std_vec[0] * y_mod));
 	m_Scene->addEllipse(last_y.x() - 5.0, last_y.y() - 5.0, 10.0, 10.0, pen_b, brush_r)->setZValue(1.0);
 	m_Scene->addEllipse(last_calc_y.x() - 5.0, last_calc_y.y() - 5.0, 10.0, 10.0, pen_b, brush_g)->setZValue(1.0);
 	for (int i = 1; i < m_CalcY.size(); i++)
 	{
-		QPointF y((double)i * x_mod, -(m_CalcY[i] / y_mod));
-		QPointF calc_y((double)i * x_mod, -(y_std_vec[i] / y_mod));
+		QPointF y((double)i * x_mod, -(m_CalcY[i] * y_mod));
+		QPointF calc_y((double)i * x_mod, -(y_std_vec[i] * y_mod));
 		m_Scene->addLine(QLineF(last_y, y), pen_r);
 		m_Scene->addLine(QLineF(last_calc_y, calc_y), pen_g);
 		last_y = y;
@@ -309,18 +309,25 @@ void Hellwig::DrawChart(double& max_x, double& max_y)
 		max_y = (y.y() < max_y) ? y.y() : max_y;
 		max_x = (calc_y.x() > max_x) ? calc_y.x() : max_x;
 		max_y = (calc_y.y() < max_y) ? calc_y.y() : max_y;
+
+		min_x = (y.x() < min_x) ? y.x() : min_x;
+		min_y = (y.y() > min_y) ? y.y() : min_y;
+		min_x = (calc_y.x() < min_x) ? calc_y.x() : min_x;
+		min_y = (calc_y.y() > min_y) ? calc_y.y() : min_y;
 	}
 }
 
-void Hellwig::DrawHelpers(const double& max_x, const double& max_y)
+void Hellwig::DrawHelpers(const double& min_x, const double& min_y, const double& max_x, const double& max_y)
 {
 	QPen pen_b;
 	pen_b.setCapStyle(Qt::RoundCap);
 	pen_b.setWidth(2);
 	double mod = 100.0;
 	QLineF v_line(0.0, 0.0, 0.0, max_y - 200.0);
+	QLineF v_line2(0.0, min_y + 200.0, 0.0, 0.0);
 	QLineF h_line(0.0, 0.0, max_x + 150.0, 0.0);
 	m_Scene->addLine(v_line, pen_b);
+	m_Scene->addLine(v_line2, pen_b);
 	m_Scene->addLine(h_line, pen_b);
 
 	int h_count = (int)(h_line.length() / mod);
@@ -335,6 +342,7 @@ void Hellwig::DrawHelpers(const double& max_x, const double& max_y)
 	{
 		double temp = (double) i * (-mod);
 		m_Scene->addLine(-10.0, temp, 10.0, temp, pen_b);
+		m_Scene->addLine(-10.0, -temp, 10.0, -temp, pen_b);
 	}
 }
 
@@ -443,7 +451,7 @@ bool Hellwig::OnLoadDataTriggered()
     QString file_path;
 
 #ifdef _DEBUG | DEBUG
-    file_path = QFileDialog::getOpenFileName(this, tr("Open data file"), QString("data.data"), "*.data");
+    file_path = QFileDialog::getOpenFileName(this, tr("Open data file"), QString("data_gus.data"), "*.data");
 #else
     file_path = QFileDialog::getOpenFileName(this, tr("Open data file"));
 #endif
@@ -485,9 +493,9 @@ bool Hellwig::OnCalcKmnk()
             return false;
     }
 
-	uint columns_count = m_Data.x_num;
-	uint rows_count = ui.tableWidget_Data->rowCount();
 	std::vector <uint> comb_vec = ui.comboBox_comb->itemData(m_BestCombIdx, ECombComboRoles::CombinationVec).value<std::vector<uint>>();
+	uint columns_count = comb_vec.size() + 1;
+	uint rows_count = ui.tableWidget_Data->rowCount();
 
 	arma::mat mat_x;
 	std::vector <double> y_std_vec;
@@ -503,15 +511,15 @@ bool Hellwig::OnCalcKmnk()
 		arma::vec vec_y(y_std_vec);
 		arma::mat mat_x_trans = mat_x.t();
 		arma::vec vec_a = (mat_x_trans * mat_x).i() * (mat_x_trans * vec_y);
-		arma::mat mat_a(vec_a);
-		arma::mat mat_su2 = (1.0 / (double)(rows_count - 3)) * ((mat_y.t() * mat_y) - mat_y.t() * mat_x * mat_a);
-		arma::mat mat_d2a = mat_su2(0, 0) * (mat_x_trans * mat_x).i();
-
-		QString da = PrepareDaString(mat_d2a);
-		CalcY(rows_count, vec_a, comb_vec);
-		su = sqrt(mat_su2(0, 0));
-		v = CalcV(su);
-		r2 = CalcR2(rows_count);
+ 		arma::mat mat_a(vec_a);
+ 		arma::mat mat_su2 = (1.0 / (double)(rows_count - 3)) * ((mat_y.t() * mat_y) - mat_y.t() * mat_x * mat_a);
+ 		arma::mat mat_d2a = mat_su2(0, 0) * (mat_x_trans * mat_x).i();
+ 
+ 		QString da = PrepareDaString(mat_d2a);
+ 		CalcY(rows_count, vec_a, comb_vec);
+ 		su = sqrt(mat_su2(0, 0));
+ 		v = CalcV(su);
+ 		r2 = CalcR2(rows_count);
 
 		SetLabelsKmnkData(da, su, v, r2);
 		SetResultLabels(da, vec_a);
@@ -534,11 +542,13 @@ bool Hellwig::OnGenerateChart()
 			return false;
 	}
 
+	double min_x = 0.0;
+	double min_y = 0.0;
 	double max_x = 0.0;
 	double max_y = 0.0;
-	DrawChart(max_x, max_y);
-	DrawHelpers(max_x, max_y);
-	m_Scene->setSceneRect(QRectF(-150.0, max_y - 300.0, abs(max_x) + 450.0, abs(max_y) + 350.0));
+	DrawChart(min_x, min_y, max_x, max_y);
+	DrawHelpers(min_x, min_y, max_x, max_y);
+	m_Scene->setSceneRect(QRectF(-150.0, max_y - 300.0, abs(max_x) + 450.0, abs(max_y - 300.0) + abs(min_y) + 300.0));
 	return true;
 }
 

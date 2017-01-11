@@ -37,8 +37,8 @@ private:
 	double CalcR2(uint rows_count);
 	double CalcV(double su);
 
-	void DrawChart(double& max_x, double& max_y);
-	void DrawHelpers(const double& max_x, const double& max_y);
+	void DrawChart(double& min_x, double& min_y, double& max_x, double& max_y);
+	void DrawHelpers(const double& min_x, const double& min_y, const double& max_x, const double& max_y);
 
 	void SetLabelsKmnkData(const QString& da, double su, double v, double r2);
 	void SetResultLabels(const QString& da, const arma::vec& vec);
