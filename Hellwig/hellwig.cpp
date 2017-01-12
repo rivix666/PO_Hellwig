@@ -6,6 +6,11 @@
 #include "Scene.h"
 #include "Utils.h"
 
+#include <QFile>
+#include <QTextStream>
+#include <iostream>     // std::cout, std::ostream, std::ios
+#include <fstream>      // std::filebuf
+
 Q_DECLARE_METATYPE(std::vector <uint>);
 Q_DECLARE_METATYPE(std::vector <double>);
 
@@ -511,6 +516,33 @@ bool Hellwig::OnCalcKmnk()
 		arma::vec vec_y(y_std_vec);
 		arma::mat mat_x_trans = mat_x.t();
 		arma::vec vec_a = (mat_x_trans * mat_x).i() * (mat_x_trans * vec_y);
+
+#ifdef _DEBUG | DEBUG
+		std::filebuf fb;
+		fb.open("xt_x.txt", std::ios::out);
+		std::ostream os(&fb);
+		(mat_x_trans * mat_x).print(os);
+		fb.close();
+
+		std::filebuf fb2;
+		fb2.open("xt_x_i.txt", std::ios::out);
+		std::ostream os2(&fb2);
+		(mat_x_trans * mat_x).i().print(os2);
+		fb2.close();
+
+		std::filebuf fb3;
+		fb3.open("xt_y.txt", std::ios::out);
+		std::ostream os3(&fb3);
+		(mat_x_trans * vec_y).print(os3);
+		fb3.close();
+
+		std::filebuf fb4;
+		fb4.open("vec_a.txt", std::ios::out);
+		std::ostream os4(&fb4);
+		vec_a.print(os4);
+		fb4.close();
+#endif
+
  		arma::mat mat_a(vec_a);
  		arma::mat mat_su2 = (1.0 / (double)(rows_count - 3)) * ((mat_y.t() * mat_y) - mat_y.t() * mat_x * mat_a);
  		arma::mat mat_d2a = mat_su2(0, 0) * (mat_x_trans * mat_x).i();
